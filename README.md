@@ -1,1 +1,2 @@
 # crop_ava
+SERVER
