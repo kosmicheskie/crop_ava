@@ -1,0 +1,32 @@
+{
+  "name": "crop_ava",
+  "version": "1.0.0",
+  "description": "SERVER",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "storybook": "start-storybook -p 9001 -c .storybook",
+    "storybook_build": "build-storybook -c .storybook -o out"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kosmicheskie/crop_ava.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kosmicheskie/crop_ava/issues"
+  },
+  "homepage": "https://github.com/kosmicheskie/crop_ava#readme",
+  "devDependencies": {
+    "@kadira/storybook": "^2.35.3",
+    "react": "^15.5.4",
+    "react-dom": "^15.5.4"
+  },
+  "dependencies": {
+    "react-bootstrap": "^0.31.0",
+    "react-dropzone": "^3.13.1",
+    "react-image-crop": "^2.0.3",
+    "superagent": "^3.5.2"
+  }
+}

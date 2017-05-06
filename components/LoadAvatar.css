@@ -1,0 +1,33 @@
+.dropzone, .saveButton {
+    background-color: #1E90FF;
+    padding: 5px;
+    border-radius: 2px;
+    cursor: pointer;
+    color: #fff;
+    box-shadow: 1px 1px #666;
+}
+
+.dropzone {
+    display: inline-block;
+}
+
+.saveButton {
+    display: block;
+    box-shadow: none;
+}
+
+.cropDiv h3 {
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.inlineDiv {
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 40px;
+}
+
+
+.avaStart, .cropDiv {
+    
+}
