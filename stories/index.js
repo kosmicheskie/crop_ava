@@ -3,6 +3,7 @@ import ReactCrop from 'react-image-crop'
 
 import { storiesOf, action } from '@kadira/storybook';
 import LoadAvatar from './../components/LoadAvatar.jsx'
+import LoadAvatar2 from './../components/LoadAvatar2.jsx'
 import imageFile from '../avatar100.png';
 
 const style1 = {
@@ -17,6 +18,11 @@ const style2 = {
 const style3 = {
     background: '#32CD32',
     fontSize: '20px'
+}
+
+function onFinish( strBase64 ) {
+    //alert('Файл (в base 64) готов для отправки на сервер!')
+    //alert( strBase64 )
 }
 
 
@@ -49,3 +55,13 @@ storiesOf('Load Avatar', module)
         inline={true}
     />
   ))
+  .add("Crop на клиенте (!) ", () => (
+    <LoadAvatar2 
+        image={imageFile} 
+        avaWidth={200}
+        maxSizeBytes={"2mb"}
+        widthResultImg={100}
+        onFinish={onFinish}
+    />
+  ))
+

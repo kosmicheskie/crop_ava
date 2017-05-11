@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactCrop from 'react-image-crop'
 import Dropzone from 'react-dropzone'
-import request from 'superagent'
 import imageFile from '../avatar100.png';
 import "../node_modules/react-image-crop/dist/ReactCrop.css"
 
@@ -27,6 +26,14 @@ export default class LoadAvatar extends React.Component {
         loadHeader: "Выделите необходимую область"
     }
 
+    static propTypes = {
+        loadButtonText: React.PropTypes.string,
+        saveButtonText: React.PropTypes.string,
+        loadHeader: React.PropTypes.string,
+        inline: React.PropTypes.bool,
+        image: React.PropTypes.string.isRequired,
+    }
+
     constructor(props) {
         super(props)
         this.state = defaultValues();
@@ -44,25 +51,14 @@ export default class LoadAvatar extends React.Component {
 
     cropSave = () => {
         if (this.file) {
-            /*request.post(`${BASE_URL}/crop`)
-               .attach('image', this.file )
-               .field('x',  this.state.crop.x )
-               .field('y',  this.state.crop.y )
-               .field('width',  this.state.crop.width )
-               .field('height',  this.state.crop.height )
-               .field('select_width',  '400' )
-               .end( this.cropEnd )*/
                const {x,y,width, height} = this.state.crop
                alert( `Файл готов к отправке. Данные выделения  x: ${x} y:${y} width: ${width} height: ${height}` )
-               console.log( this.file.name )
-               console.log( this.state.crop )
                this.setState( defaultValues() )
         } else {
             alert("Загрузите файл")
         }
-        
     }
-
+    
     cropEnd = (err, res) => {
         const indexImage = this.props.indexImage
         if (err || !res.ok) {
@@ -72,22 +68,11 @@ export default class LoadAvatar extends React.Component {
             this.props.onEnd(err, res.body)
         }
     }
-
-
-
+    
     onDrop =  (acceptedFiles, rejectedFiles) => {
         let self = this;
         if (acceptedFiles.length) {
             let f = acceptedFiles[0];
-            if (!f.type.match('image.*')) {
-                alert("Загрузите фотографию")
-                return;
-            }
-            if (f.size > 2000000) {
-                alert("Слишком большой файл")
-                return;
-            }
-
             let reader = new FileReader();
             reader.onload = (function (theFile){
                 self.file = theFile
