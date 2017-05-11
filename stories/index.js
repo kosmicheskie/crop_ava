@@ -60,7 +60,7 @@ storiesOf('Load Avatar', module)
         image={imageFile} 
         avaWidth={200}
         maxSizeBytes={"2mb"}
-        widthResultImg={100}
+        widthResultImg={200}
         onFinish={onFinish}
     />
   ))
