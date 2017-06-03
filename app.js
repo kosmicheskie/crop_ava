@@ -9,7 +9,8 @@ import {Router} from 'express';
 import cors from 'cors';
 
 //api
-import API from './api';
+//import API from './api';
+
 //middlewares
 import getMiddlewares from './middlewares';
 //routes
@@ -33,7 +34,8 @@ export default class App
         //1. get all Middlewares
         //getMiddlewares(this.server);
         //2. get API instance
-        this.api = new API(this.config);
+        //this.api = new API(this.config);
+        this.api = null;
         //3. get all Routes
         getRoutes(this.server,this.api);
         //merging into one piece...

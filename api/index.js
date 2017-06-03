@@ -1,18 +1,21 @@
+import fs from 'fs';
+import path from 'path';
 
 
-export default class API
+export default function getApi(ctx)
 {
-    constructor(configuration)
+    const routesRaw = fs.readdirSync('./api').map((item)=>{
+        return path.resolve('./api',item);
+    });
+    let dirArray=[];
+    for(let key in routesRaw)
     {
-        this.config = configuration;
-    };
-    cropImage(image,x,y,width,height)
-    {
-
+        if(fs.statSync(routesRaw[key]).isDirectory())
+        {
+            dirArray.push(routesRaw[key]);
+        }
     }
-    cropScaledImage(image,x_percent,y_percent,width_percent,height_percent)
-    {
-
-    }
-
+    dirArray.forEach((item)=>{
+        let row = require(item).default(ctx);
+    });
 }

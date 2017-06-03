@@ -6,6 +6,7 @@ import _ from 'lodash';
 import moment from 'moment';
 //import easyimage from 'easyimage';
 import Jimp from 'jimp';
+import Cropper from '../../api/image_cropper/index';
 
 export default function(ctx,api2) {
     //const app = ctx.asyncRouter;
@@ -66,6 +67,8 @@ export default function(ctx,api2) {
     const api = ctx;
     const app = ctx.asyncRouter;
 
+    const CROPPER = new Cropper();
+    CROPPER.init();
     app.post('/avatar/upload', upload.single('file'), async (req) => {
         // console.log(req.file);
         const { file } = req;
@@ -75,21 +78,19 @@ export default function(ctx,api2) {
             console.log('request has a req.body');
             //считываем файл...
             //TODO real configurable file path
-            let fileDescriptor = await Jimp.read(/*path.resolve(__dirname,file.path)*/file.path);
-            console.log(`image height: ${fileDescriptor.bitmap.height}`);//высота
-            console.log(`image width: ${fileDescriptor.bitmap.width}`);//ширина
+            //let fileDescriptor = await Jimp.read(/*path.resolve(__dirname,file.path)*/file.path);
+            //console.log(`image height: ${fileDescriptor.bitmap.height}`);//высота
+           // console.log(`image width: ${fileDescriptor.bitmap.width}`);//ширина
             //если есть параметр сжатия изображения(указанная ширина) и параметры кропа
-            if((req.body.selectedWidth)&&(req.body.xPercent)&&(req.body.yPercent)&&(req.body.wPercent)&&(req.body.hPercent))
+            //вынести в отдельную функцию...
+            if((req.body.xPercent)&&(req.body.yPercent)&&(req.body.wPercent)&&(req.body.hPercent))
             {
-                const selWidth = Number(req.body.selectedWidth);
-                const realWidth = fileDescriptor.bitmap.width;
-                const realHeight = fileDescriptor.bitmap.height;
-                if(isNaN(selWidth))
+                /*if(isNaN(selWidth))
                 {
                     return{
                         error:`bad parameter:<selWidth>:${req.body.selectedWidth}`
                     }
-                }
+                }*/
                 req.body.xPercent = Number(req.body.xPercent);
                 if(isNaN(req.body.xPercent))
                 {
@@ -118,7 +119,25 @@ export default function(ctx,api2) {
                         error:`bad parameter:<hPercent>:${req.body.hPercent}`
                     }
                 }
-                //вычисляем, какие размеры изображения были при отсылке с клиента
+
+
+                const result = await CROPPER.cropPercentDimToBitmap(file.path,req.body.xPercent,req.body.yPercent,req.body.wPercent,req.body.hPercent);
+                if(result.saved==true)
+                {
+                    return {
+                        name: file.fieldname,
+                        url: `${config.url}:${config.port}/${file.path.replace(/\\/g, '/')}`,
+                        path: `/${file.path.replace(/\\/g, '/')}`,
+                        mimetype: file.mimetype,
+                        filename: file.originalname,
+                        cropped: result.cropped
+                    };
+                }
+                else
+                {
+                    return 'БУЭЭЭЭЭЭ!!!!';
+                }
+               /* //вычисляем, какие размеры изображения были при отсылке с клиента
                 let selHeight=Math.round(selWidth*realHeight/realWidth);//вычисляем указанную высоту, округляя до целых
                 //let selHeight=selWidth*realHeight/realWidth;//вычисляем указанную высоту(точно)
                 console.log(`selected dimensions: width: ${selWidth}; height: ${selHeight}`);
@@ -131,7 +150,7 @@ export default function(ctx,api2) {
                 console.log(`crop factor is: ${cropFactor}`);
                 //const x_Px = Math.trunc(req.body.xPercent*cropFactor*selWidth/100);//берем целое число, чтобы не выйти за границы при случае, когда выделяется правый верхний край
                 const x_Px = Math.trunc(req.body.xPercent*realWidth/100);//берем целое число, чтобы не выйти за границы при случае, когда выделяется правый верхний край
-                //console.log(`x_px:${x_Px}`);
+                console.log(`x_px:${x_Px}`);
                 const y_Px = Math.trunc(req.body.yPercent*realHeight/100);
                 const w_Px = Math.trunc(req.body.wPercent*realWidth/100);
                 const h_Px = Math.trunc(req.body.hPercent*realHeight/100);
@@ -139,7 +158,7 @@ export default function(ctx,api2) {
                 let savedImage = croppedImage.write("cropped.jpg");
                 return {
                     saved:true
-                }
+                }*/
             }
 
 
@@ -178,8 +197,72 @@ export default function(ctx,api2) {
 
 
 
-    var upload2 = multer({ dest: 'uploads/' });
-    api.post('/avatar/upload2',upload2.single('avatar'),(req,res,next)=>{
+    var upload2 = multer({storage:multer.memoryStorage({}) });
+    api.post('/avatar/upload2',upload2.single('file'),async (req,res,next)=> {
+        const file  = req.file;
+        const obj = {};
+        if((req.body)&&(file))
+        {
+            if((req.body.xPercent)&&(req.body.yPercent)&&(req.body.wPercent)&&(req.body.hPercent))
+            {
+                req.body.xPercent = Number(req.body.xPercent);
+                if(isNaN(req.body.xPercent))
+                {
+                    return{
+                        error:`bad parameter:<xPercent>:${req.body.xPercent}`
+                    }
+                }
+                req.body.yPercent = Number(req.body.yPercent);
+                if(isNaN(req.body.yPercent))
+                {
+                    return{
+                        error:`bad parameter:<yPercent>:${req.body.yPercent}`
+                    }
+                }
+                req.body.wPercent = Number(req.body.wPercent);
+                if(isNaN(req.body.wPercent))
+                {
+                    return{
+                        error:`bad parameter:<wPercent>:${req.body.wPercent}`
+                    }
+                }
+                req.body.hPercent = Number(req.body.hPercent);
+                if(isNaN(req.body.hPercent))
+                {
+                    return{
+                        error:`bad parameter:<hPercent>:${req.body.hPercent}`
+                    }
+                }
+                const result = await CROPPER.cropPercentDimToBitmap(file.buffer,req.body.xPercent,req.body.yPercent,req.body.wPercent,req.body.hPercent);
+                if(result.saved==true)
+                {
+                    return {
+                        name: file.fieldname,
+                        url: `${config.url}:${config.port}/${file.path.replace(/\\/g, '/')}`,
+                        path: `/${file.path.replace(/\\/g, '/')}`,
+                        mimetype: file.mimetype,
+                        filename: file.originalname,
+                        cropped: result.cropped
+                    };
+                }
+                else
+                {
+                    return 'БУЭЭЭЭЭЭ!!!!';
+                }
+
+            }
+
+
+        }
+        else {
+            console.log('request does not have a req.body!!!');
+        }
+
+
+    });
+
+    var upload64 = multer({storage:multer.memoryStorage({}) });
+    api.post('/avatar/upload/base64',upload2.single('avatar'),(req,res,next)=>{
         console.log('route post /upload initiated....');
         //сохранение на диск
         console.log(req);
