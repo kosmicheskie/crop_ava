@@ -7,7 +7,7 @@ import fs from 'fs';
 import {AsyncRouter} from 'express-async-router';
 import {Router} from 'express';
 import cors from 'cors';
-
+//import bodyParser from 'body-parser';
 //api
 //import API from './api';
 
@@ -40,6 +40,7 @@ export default class App
         getRoutes(this.server,this.api);
         //merging into one piece...
         this.server.use(this.server.asyncRouter);
+        //this.server.use(bodyParser.json({}));
         //new api
     }
     run()
