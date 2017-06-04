@@ -3,7 +3,7 @@ module.exports = {
   server:{
       port:3000,
       url:`localhost`,
-      uploadImagesDir:'./static/upload',
+      uploadImagesDir:'./static/upload/avatar',
       mimeTypes:['image/jpeg','image/png']
   }
 };
