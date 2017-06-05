@@ -7,7 +7,9 @@ import moment from 'moment';
 //import easyimage from 'easyimage';
 import Jimp from 'jimp';
 import pify from 'pify';
-import Cropper from '../../api/image_cropper/index';
+//import Cropper from '../../api/image_cropper/index';
+
+let cropper = require('../../api/image_cropper');
 
 export default function(ctx,api2) {
     //const app = ctx.asyncRouter;
@@ -69,144 +71,112 @@ export default function(ctx,api2) {
     const api = ctx;
     const app = ctx.asyncRouter;
 
-    const CROPPER = new Cropper();
-    CROPPER.init();
+
+
+
     app.post('/avatar/upload', upload.single('file'), async (req) => {
-        const { file } = req;
-        const obj = {};
-        if((req.body)&&(file))
-        {
-            if((req.body.xPercent)&&(req.body.yPercent)&&(req.body.wPercent)&&(req.body.hPercent))
-            {
-                req.body.xPercent = Number(req.body.xPercent);
-                if(isNaN(req.body.xPercent))
-                {
-                    return{
-                        error:`bad parameter:<xPercent>:${req.body.xPercent}`
+        try {
+            const {file} = req;
+            if ((req.body) && (file)) {
+                if ((req.body.xPercent) && (req.body.yPercent) && (req.body.wPercent) && (req.body.hPercent)) {
+                    req.body.xPercent = Number(req.body.xPercent);
+                    if (isNaN(req.body.xPercent)) {
+                        return {
+                            error: `bad parameter:<xPercent>:${req.body.xPercent}`
+                        }
                     }
-                }
-                req.body.yPercent = Number(req.body.yPercent);
-                if(isNaN(req.body.yPercent))
-                {
-                    return{
-                        error:`bad parameter:<yPercent>:${req.body.yPercent}`
+                    req.body.yPercent = Number(req.body.yPercent);
+                    if (isNaN(req.body.yPercent)) {
+                        return {
+                            error: `bad parameter:<yPercent>:${req.body.yPercent}`
+                        }
                     }
-                }
-                req.body.wPercent = Number(req.body.wPercent);
-                if(isNaN(req.body.wPercent))
-                {
-                    return{
-                        error:`bad parameter:<wPercent>:${req.body.wPercent}`
+                    req.body.wPercent = Number(req.body.wPercent);
+                    if (isNaN(req.body.wPercent)) {
+                        return {
+                            error: `bad parameter:<wPercent>:${req.body.wPercent}`
+                        }
                     }
-                }
-                req.body.hPercent = Number(req.body.hPercent);
-                if(isNaN(req.body.hPercent))
-                {
-                    return{
-                        error:`bad parameter:<hPercent>:${req.body.hPercent}`
+                    req.body.hPercent = Number(req.body.hPercent);
+                    if (isNaN(req.body.hPercent)) {
+                        return {
+                            error: `bad parameter:<hPercent>:${req.body.hPercent}`
+                        }
                     }
-                }
 
+                    const result = await cropper.cropPercentDimToBitmap(
+                        file.path,
+                        req.body.xPercent,
+                        req.body.yPercent,
+                        req.body.wPercent,
+                        req.body.hPercent,
+                        path.resolve(config.uploadCroppedDir),
+                        `cropped_${Date.now()}_${_.random(1, 1000)}.jpg`);
 
-                const result = await CROPPER.cropPercentDimToBitmap(file.path,req.body.xPercent,req.body.yPercent,req.body.wPercent,req.body.hPercent);
-                if(result.saved==true)
-                {
-                    return {
-                        name: file.fieldname,
-                        url: `${config.url}:${config.port}/${file.path.replace(/\\/g, '/')}`,
-                        path: `/${file.path.replace(/\\/g, '/')}`,
-                        mimetype: file.mimetype,
-                        filename: file.originalname,
-                        cropped: result.cropped
-                    };
-                }
-                else
-                {
-                    return 'БУЭЭЭЭЭЭ!!!!';
-                }
+                    if (result.saved == true) {
+                        return {
+                            success: 1,
+                            name: file.fieldname,
+                            url: `${config.url}:${config.port}/${file.path.replace(/\\/g, '/')}`,
+                            path: `/${file.path.replace(/\\/g, '/')}`,
+                            mimetype: file.mimetype,
+                            filename: file.originalname,
+                            cropped_path: result.croppedPath
+                        };
+                    }
+                    else {
+                        return {
+                            success: 0,
+                            error: "error processing file"
+                        };
+                    }
 
+                }
+            }
+            else {
+                return{
+                    success:0,
+                    error:"Not enough parameters for cropping",
+                    name: file.fieldname,
+                    url: `${config.url}:${config.port}/${file.path.replace(/\\/g, '/')}`,
+                    path: `/${file.path.replace(/\\/g, '/')}`,
+                    mimetype: file.mimetype,
+                    filename: file.originalname,
+                }
             }
 
-
-
-
         }
-        else {
-            console.log('request does not have a req.body!!!');
+        catch (e)
+        {
+            return{
+                success:0,
+                error:e
+            }
         }
-
-
-
-        return {
-            name: file.fieldname,
-            url: `${config.url}:${config.port}/${file.path.replace(/\\/g, '/')}`,
-            path: `/${file.path.replace(/\\/g, '/')}`,
-            mimetype: file.mimetype,
-            filename: file.originalname,
-        };
     });
 
 
 
 
 
-    /*const upload64 = pify(multer().single('avatar'));
-    api.post('/avatar/upload/base64',upload64(async (req,res,next)=>{
-        try {
-            console.log('route post /upload initiated....');
-            if (req.body.avatar) {
-                let result = await CROPPER.cropBase64ToBitmap(req.body.avatar, config.uploadImagesDir);
-                console.log(result);
-                //res.end(result);
-                return {result: result};
 
-            }
-            else {
-                return {result: new Error('error writing file!!!')};
-            }
-        }
-        catch (e)
-        {
-            return e;
-        }
-    }));*/
-    //const upload64 = pify(multer().single('avatar'));
     const upload64 = multer({storage:multer.memoryStorage({})});
-
     app.post('/avatar/upload/base64',upload.single('avatar'),async (req,res,next)=>{
 
             console.log('route post /upload initiated....');
             if (req.body.avatar) {
-                let result = await CROPPER.cropBase64ToBitmap(req.body.avatar, config.uploadImagesDir);
-                console.log(result);
-                //res.end(result);
+                let data = req.body.avatar.replace(/^data:image\/\w+;base64,/, "");
+                let result;
+                if(req.body.filename) {
+                    result = await cropper.cropBase64ToBitmap(data, path.resolve(config.uploadBase64Dir), req.body.filename);
+                }
+                else {
+                    result = await cropper.cropBase64ToBitmap(data, path.resolve(config.uploadBase64Dir), `base64_${Date.now()}_${_.random(1, 1000)}.jpg`);
+                }
                 return {result: result};
-
             }
             else {
                 return {result: new Error('error writing file!!!')};
             }
-
-
     });
-
-
-    api.post('/avatar/upload/base641',upload64.single('avatar'),(req,res,next)=> {
-        console.log('route post /upload initiated....');
-        if (req.body.avatar) {
-            console.log('has body avatar!!!');
-            CROPPER.cropBase64ToBitmap2(req.body.avatar, config.uploadImagesDir,(err)=>{
-                if(err)
-                    return next('bad result of saving file...');
-                else
-                    res.send('saved');
-            });
-
-
-        }
-        else {
-            res.end('error');
-        }
-    });
-
 }
